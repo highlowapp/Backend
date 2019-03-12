@@ -1,6 +1,3 @@
-When I work out the kinks I will post instructions how to use this.
-
-
 # Architecture
 The architecture of the backend is based on the idea of __microservices__. Basically, any service we need (such as an API, computational engine, or frontend HTTP server) is contained in its own separate Docker image. This allows us to easily update, swap out and add to any of our services without breaking something. 
 
