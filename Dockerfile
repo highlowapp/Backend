@@ -6,6 +6,6 @@ RUN git clone https://github.com/highlowapp /high_low_app
 
 WORKDIR high_low_app
 
-RUN python high_low_app/Backend/python_with_mysql_test.py 
+RUN python high_low_app/Backend/user_input.py 
 
 RUN python high_low_app/Backend/api.py
