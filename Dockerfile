@@ -1,6 +1,3 @@
-#include flask
-#include python file
-#include mysql
 
 FROM ubuntu:17.10
 
