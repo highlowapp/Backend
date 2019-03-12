@@ -1,4 +1,7 @@
 #!/usr/bin/python
+''' 
+This takes input from the user and saves it to mysql
+'''
 import MySQLdb
 password = raw_input("What is your mysql password? ")
 db = MySQLdb.connect(host="localhost",  # Put in your host name 
