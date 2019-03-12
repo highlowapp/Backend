@@ -1,11 +1,10 @@
 #!/usr/bin/python
 import MySQLdb
-
+password = raw_input("What is your mysql password? ")
 db = MySQLdb.connect(host="localhost",  # Put in your host name 
                      user="root",       # Put in your username default is root
-                     passwd="your password",     # Put in your password for MySQL
-                     db="high_low_db")   # Put in the name of the database you want to work on 
- 
+                     passwd='{}'.format(password),     # Put in your password for MySQL
+                     db="high_low_db")   # Put in the name of the database you want to work on
 # Create a Cursor object to execute queries.
 cur = db.cursor()
 
