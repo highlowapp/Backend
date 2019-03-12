@@ -1,14 +1,11 @@
+#We are going to have to run mysql seperately to see if this works until we can get the bluehost working
 
 FROM ubuntu:17.10
-
-RUN sudo apt-get install mysql-server
-
-ENTRYPOINT ["/startupscript.sh"]
 
 RUN git clone https://github.com/highlowapp /high_low_app
 
 WORKDIR high_low_app
- 
-RUN python python_with_mysql_test.py 
 
-RUN mysql < mysql_file -u root -p
+RUN python high_low_app/Backend/python_with_mysql_test.py 
+
+RUN python high_low_app/Backend/api.py
