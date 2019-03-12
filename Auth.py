@@ -11,6 +11,7 @@ class Auth:
         self.password = password
         self.database = database
 
+    #Sign up
     def sign_up(self, firstname, lastname, email, password, confirmpassword):
 
         #Make a MySQL connection
@@ -55,6 +56,10 @@ class Auth:
         #TODO: Determine our personal specifications for passwords
         if len(password) < 6:
             error = "password-too-short"
+
+        #Do the passwords match?
+        if password != confirmpassword:
+            error = "passwords-no-match"
         
 
         if error == "":
@@ -65,9 +70,62 @@ class Auth:
             uid = uuid.uuid1()
 
             #Hash the password
-            
+            hashed_password = bcrypt.hashpw(password, bcrypt.gensalt())
+
+            #Insert into the database
+            cursor.execute("INSERT INTO users(uid, firstname, lastname, email, password) VALUES('" + uid + "', '" + firstname + "', '" + lastname + "', '" + email + "', '" + password + "');")
+
+            #Commit and close
+            conn.commit()
+            conn.close()
+
+            #Return the uid
+            return uid
+
+        else:
+            #Close the connection
+            conn.close()
+            return error
+
+    #Sign in
+    def sign_in(self, email, password):
+
+        #Make a connection to MySQL
+        conn = pymysql.connect(self.host, self.username, self.password, self.database)
+
+        cursor = conn.cursor()
+
+        #Get and sanitize the input
+        email = bleach.clean(email)
+        password = bleach.clean(password)
+
+        #Keep track of errors
+        error = ""
+
+        #Does a user exist with that email?
+        user = cursor.execute("SELECT uid, password FROM users WHERE email='" + email + "';")
+
+        if  len( user.fetchall() ) == 0:
+            error = "user-no-exist"
 
 
         else:
-            return error
 
+            #Get the user
+            existingUser = user.fetchone()
+
+            #If the password is correct...
+            if bcrypt.checkpw(password, existingUser["password"]):
+
+                #The user is authenticated; return the uid
+                return existingUser["uid"]
+
+            else:
+                #The password is wrong
+                error = "incorrect-email-or-password"
+        
+
+        #If the user was not authenticated, return the error
+        return error
+
+    

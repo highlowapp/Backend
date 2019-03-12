@@ -1,0 +1,6 @@
+cryptography
+Flask
+pymysql
+bleach
+bcrypt
+jwt
