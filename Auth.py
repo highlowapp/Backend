@@ -3,6 +3,7 @@ import bleach
 import uuid
 import bcrypt
 
+
 class Auth:
 
     def __init__(self, host, username, password, database):
@@ -10,6 +11,7 @@ class Auth:
         self.username = username
         self.password = password
         self.database = database
+        self.blacklisted_tokens = []
 
     #Sign up
     def sign_up(self, firstname, lastname, email, password, confirmpassword):
@@ -128,4 +130,4 @@ class Auth:
         #If the user was not authenticated, return the error
         return error
 
-    
+     
