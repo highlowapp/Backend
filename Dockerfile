@@ -1,3 +1,4 @@
+#We are going to have to run mysql seperately to see if this works until we can get the bluehost working
 
 FROM ubuntu:17.10
 
