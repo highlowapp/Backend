@@ -17,16 +17,19 @@ app = Flask(__name__)
 #Placeholders for HTML
 sign_up_html = ""
 sign_in_html = ""
+reset_password_html = ""
 
 #Get the HTML for the sign up page
-with open("signUp.html") as file:
+with open("signUp.html", 'r') as file:
     sign_up_html = file.read()
 
 #Get the HTML for the sign in page
-with open("signIn.html") as file:
+with open("signIn.html", 'r') as file:
     sign_in_html = file.read()
 
-
+#Get the HTML for the reset password page
+with open("resetPassword.html", 'r') as file:
+    reset_password_html = file.read()
 
 
 #Define app routes
@@ -55,6 +58,20 @@ def sign_in():
 
     return sign_in_html
 
+#Reset password
+@app.route("/password_reset/<path:reset_id>", methods=["GET", "POST"])
+def password_reset():
+    
+    if request.method == "POST":
+        return auth.reset_password( reset_id, request.form["oldpassword"], request.form["newpassword"] )
+
+    return rest_password_html
+
+#Send password reset email
+@app.route("/forgot_password", methods=["POST"])
+def forgot_password():
+    
+    return auth.send_password_reset_email( request.form["email"] )
 
 
 #Run the app

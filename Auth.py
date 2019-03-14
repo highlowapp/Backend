@@ -175,3 +175,12 @@ class Auth:
             return payload["sub"]
 
         return "ERROR-INVALID-TOKEN"
+
+
+    def send_reset_password_email(self, email):
+
+        #TODO: Send email to the user's email address
+
+    def reset_password(self, id, oldpassword, newpassword):
+
+        #TODO: Confirm ID and reset password
