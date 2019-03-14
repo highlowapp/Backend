@@ -22,8 +22,8 @@ class Auth:
         self.SECRET_KEY = ""
 
         #Generate a random string for the secret key
-        for i in range( len(allowable_characters) ):
-            self.SECRET_KEY += allowable_characters[i]
+        for i in range( 15 ):
+            self.SECRET_KEY += random.choice(allowable_characters)
 
     #Sign up
     def sign_up(self, firstname, lastname, email, password, confirmpassword):
