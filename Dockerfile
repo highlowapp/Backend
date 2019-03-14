@@ -3,7 +3,7 @@
 FROM ubuntu:17.10
 
 RUN apt-get update -y
-RUN apt-get -y install python-pip python-dev build-essential git
+RUN apt-get -y install python-pip python-dev build-essential git libffi-dev
 
 RUN git clone https://github.com/highlowapp/Backend /app
 WORKDIR /app
