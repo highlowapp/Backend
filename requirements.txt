@@ -3,4 +3,4 @@ Flask
 pymysql
 bleach
 bcrypt
-jwt
+PyJWT
