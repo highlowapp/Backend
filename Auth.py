@@ -2,6 +2,14 @@ import pymysql
 import bleach
 import uuid
 import bcrypt
+import jwt
+import random
+import datetime
+import time
+
+random_generator = random.SystemRandom()
+allowable_characters = "a b c d e f g h i j k l m n o p q r s t u v w x y z A B C D E F G H I J K L M N O P Q R S T U V W X Y Z 1 2 3 4 5 6 7 8 9 0 ! @ # $ % ^ & *".split(" ")
+
 
 class Auth:
 
@@ -10,6 +18,12 @@ class Auth:
         self.username = username
         self.password = password
         self.database = database
+        self.blacklisted_tokens = []
+        self.SECRET_KEY = ""
+
+        #Generate a random string for the secret key
+        for i in range( len(allowable_characters) ):
+            self.SECRET_KEY += allowable_characters[i]
 
     #Sign up
     def sign_up(self, firstname, lastname, email, password, confirmpassword):
@@ -79,8 +93,9 @@ class Auth:
             conn.commit()
             conn.close()
 
-            #Return the uid
-            return uid
+            #Create and return an auth token
+            token = self.create_token(uid)
+            return token
 
         else:
             #Close the connection
@@ -117,8 +132,11 @@ class Auth:
             #If the password is correct...
             if bcrypt.checkpw(password, existingUser["password"]):
 
-                #The user is authenticated; return the uid
-                return existingUser["uid"]
+                #The user is authenticated; create and return a token
+                token = self.create_token( existingUser["uid"] )
+
+                return token
+
 
             else:
                 #The password is wrong
@@ -128,4 +146,32 @@ class Auth:
         #If the user was not authenticated, return the error
         return error
 
-    
+    def create_token(self, uid):
+
+        #Calculate time half a year in the future (approximately)
+        current_time = datetime.datetime.now()
+        six_months_hence = current_time + datetime.timedelta( minutes=60 * 24 * 365/2 )
+
+
+
+        token_payload = {
+            "iss": "highlow",
+            "exp": time.mktime( six_months_hence.timetuple() ),
+            "sub": uid,
+            "iat": time.mktime( current_time.timetuple() )
+        }
+
+        token = jwt.encode(token_payload, self.SECRET_KEY, algorithm="HS256")
+
+        return token
+
+    def validate_token(self, token):
+        
+        payload = jwt.decode(token, self.SECRET_KEY, algorithms=["HS256"])
+
+        current_timestamp = time.mktime( datetime.datetime.now().timetuple() )
+
+        if payload["exp"] > current_timestamp:
+            return payload["sub"]
+
+        return "ERROR-INVALID-TOKEN"
