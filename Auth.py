@@ -217,7 +217,7 @@ class Auth:
         ## Fetch the password reset email HTML and insert user information and the link we just generated ##
         password_reset_html = ""
 
-        with open("passwordReset.html", "r") as file:
+        with open("passwordResetEmail.html", "r") as file:
             password_reset_html = file.read()
 
         password_reset_html = password_reset_html %( users[0]["firstname"], users[0]["lastname"], 'http://' + self.servername + '/password_reset/' + token )

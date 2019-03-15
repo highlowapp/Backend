@@ -47,6 +47,10 @@ def sign_up():
     
     return sign_up_html
 
+
+
+
+
 #Sign_in
 @app.route("/sign_in", methods=["GET", "POST"])
 def sign_in():
@@ -57,20 +61,34 @@ def sign_in():
 
     return sign_in_html
 
+
+
+
+
 #Reset password
 @app.route("/password_reset/<path:reset_id>", methods=["GET", "POST"])
 def password_reset():
     
     if request.method == "POST":
+        
         return auth.reset_password( reset_id, request.form["oldpassword"], request.form["newpassword"] )
 
     return rest_password_html
+
+
+
+
 
 #Send password reset email
 @app.route("/forgot_password", methods=["POST"])
 def forgot_password():
     
     return auth.send_password_reset_email( request.form["email"] )
+
+
+
+
+
 
 
 #Run the app
