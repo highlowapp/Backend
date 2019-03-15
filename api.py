@@ -71,7 +71,7 @@ def password_reset():
     
     if request.method == "POST":
         
-        return auth.reset_password( reset_id, request.form["oldpassword"], request.form["newpassword"] )
+        return auth.reset_password( reset_id, request.form["password"], request.form["confirmpassword"] )
 
     return rest_password_html
 
