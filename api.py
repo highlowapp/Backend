@@ -1,7 +1,6 @@
 from flask import Flask, session, request
 from Auth import Auth
 
-
 #MySQL server configuration
 host = "localhost"
 username = "username"
@@ -9,7 +8,7 @@ password = "password"
 database = "database"
 
 #Create an Auth instance
-auth = Auth(host, username, password, database)
+auth = Auth("auth_server_name", host, username, password, database)
 
 #Create a Flask app instance
 app = Flask(__name__)

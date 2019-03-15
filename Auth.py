@@ -6,6 +6,17 @@ import jwt
 import random
 import datetime
 import time
+import smtplib, ssl
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+import html2text
+
+#Define settings for email SMTP server
+SSL_PORT = 465
+SMTP_SERVER = "smtp.gmail.com"
+administrative_email = "administrative_email@oursite.com"
+password = "your_email's_password"
+
 
 random_generator = random.SystemRandom()
 allowable_characters = "a b c d e f g h i j k l m n o p q r s t u v w x y z A B C D E F G H I J K L M N O P Q R S T U V W X Y Z 1 2 3 4 5 6 7 8 9 0 ! @ # $ % ^ & *".split(" ")
@@ -13,7 +24,8 @@ allowable_characters = "a b c d e f g h i j k l m n o p q r s t u v w x y z A B 
 
 class Auth:
 
-    def __init__(self, host, username, password, database):
+    def __init__(self, servername, host, username, password, database):
+        self.servername = servername
         self.host = host
         self.username = username
         self.password = password
@@ -146,17 +158,17 @@ class Auth:
         #If the user was not authenticated, return the error
         return error
 
-    def create_token(self, uid):
+    def create_token(self, uid, expiration_minutes= 60 * 24 * 365 / 2 ):
 
         #Calculate time half a year in the future (approximately)
         current_time = datetime.datetime.now()
-        six_months_hence = current_time + datetime.timedelta( minutes=60 * 24 * 365/2 )
+        expiration = current_time + datetime.timedelta( minutes=expiration_minutes ) #Defaults to six months in the future
 
 
 
         token_payload = {
             "iss": "highlow",
-            "exp": time.mktime( six_months_hence.timetuple() ),
+            "exp": time.mktime( expiration.timetuple() ),
             "sub": uid,
             "iat": time.mktime( current_time.timetuple() )
         }
@@ -179,8 +191,98 @@ class Auth:
 
     def send_reset_password_email(self, email):
 
-        #TODO: Send email to the user's email address
+        #Clean the email
+        email = bleach.clean(email)
 
-    def reset_password(self, id, oldpassword, newpassword):
+        ## Find user with that email ##
 
-        #TODO: Confirm ID and reset password
+        #Connect to the MySQL server
+        conn = pymysql.connect(self.host, self.username, self.password, self.database)
+        cursor = conn.cursor()
+
+        #Get the relevant user(s)
+        users = cursor.execute("SELECT firstname, lastname, uid FROM users WHERE email='" + email + "';").fetchall()
+
+        #Commit and close the connection
+        conn.commit()
+        conn.close()
+
+        #Check and see if any users existed with that email
+        if len(users) == 0:
+            return "user-no-exist"
+
+        #Create a "password reset id" token that expires in a day
+        token = self.create_token( users[0]["uid"], expiration_minutes= 60 * 24 )
+
+        ## Fetch the password reset email HTML and insert user information and the link we just generated ##
+        password_reset_html = ""
+
+        with open("passwordReset.html", "r") as file:
+            password_reset_html = file.read()
+
+        password_reset_html = password_reset_html %( users[0]["firstname"], users[0]["lastname"], 'http://' + self.servername + '/password_reset/' + token )
+
+        #Create a plaintext version of the HTML email
+        password_reset_plaintext = html2text.html2text( password_reset_html )
+
+        #Create the MIMETexts for the password reset
+        email_message = MIMEMultipart("alternative")
+
+        email_message_html = MIMEText( password_reset_html, 'html' )
+        email_message_plaintext = MIMEText( password_reset_plaintext, 'plain')
+
+        #Define email headers
+        email_message["Subject"] = "High/Low Password Reset Confirmation"
+        email_message["From"] = administrative_email
+        email_message["To"] = email
+
+        #Attach plaintext and HTML to message
+        email_message.attach(email_message_plaintext)
+        email_message.attach(email_message_html) 
+
+        #Create a SSL context
+        SSL_context = ssl.create_default_context()
+
+        #Connect to an email server and send an email
+        with smtplib.SMTP_SSL(SMTP_SERVER, port, context=context) as email_server:
+
+            #Login with the email
+            email_server.login(administrative_email, password)
+
+            #Send the email!
+            email_server.sendmail( administrative_email, email, email_message.as_string() )
+
+
+
+    def reset_password(self, id, password, confirmpassword):
+
+        #Clean the passwords
+        password = bleach.clean(password)
+        confirmpassword = bleach.clean(confirmpassword)
+
+        #Make sure the id token is valid
+        uid = self.validate_token(id)
+
+        if uid == "ERROR-INVALID-TOKEN":
+            return "ERROR-INVALID-TOKEN"
+
+        #Confirm the passwords match
+        if password != confirmpassword:
+            return "passwords-no-match"
+
+        #If the passwords matched and the token is valid, go ahead and reset the password
+        hashed_password = bcrypt.hashpw(password, bcrypt.gensalt())
+
+        #Connect to MySQL
+        conn = pymysql.connect(self.host, self.username, self.password, self.database)
+        cursor = conn.cursor()
+
+        #Update the password
+        cursor.execute("UPDATE users SET password = '" + hashed_password + "' WHERE uid='" + uid + "';")
+
+        #Commit and close the connection
+        conn.commit()
+        conn.close()
+
+        #Return success message
+        return "success"

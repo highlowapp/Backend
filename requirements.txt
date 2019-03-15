@@ -4,3 +4,4 @@ pymysql
 bleach
 bcrypt
 PyJWT
+html2text
