@@ -18,6 +18,9 @@ administrative_email = "administrative_email@oursite.com"
 password = "your_email's_password"
 
 
+#Define variables for generating random secret key
+#TODO: Consider using bcrypt.gensalt() to generate the key?
+#TODO: Consider putting the secret key inside a file so it isn't regenerated every time we start the Auth instance
 random_generator = random.SystemRandom()
 allowable_characters = "a b c d e f g h i j k l m n o p q r s t u v w x y z A B C D E F G H I J K L M N O P Q R S T U V W X Y Z 1 2 3 4 5 6 7 8 9 0 ! @ # $ % ^ & *".split(" ")
 
@@ -158,6 +161,7 @@ class Auth:
         #If the user was not authenticated, return the error
         return error
 
+    #Create Token
     def create_token(self, uid, expiration_minutes= 60 * 24 * 365 / 2 ):
 
         #Calculate time half a year in the future (approximately)
@@ -177,6 +181,7 @@ class Auth:
 
         return token
 
+    #Validate Token
     def validate_token(self, token):
         
         payload = jwt.decode(token, self.SECRET_KEY, algorithms=["HS256"])
@@ -188,7 +193,7 @@ class Auth:
 
         return "ERROR-INVALID-TOKEN"
 
-
+    #Send password reset email
     def send_reset_password_email(self, email):
 
         #Clean the email
@@ -252,8 +257,7 @@ class Auth:
             #Send the email!
             email_server.sendmail( administrative_email, email, email_message.as_string() )
 
-
-
+    #Reset password
     def reset_password(self, id, password, confirmpassword):
 
         #Clean the passwords
