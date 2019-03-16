@@ -33,6 +33,11 @@ with open("resetPassword.html", 'r') as file:
 
 #Define app routes
 
+@app.route("/", methods=["GET", "POST"])
+def main_page():
+
+    return "Go somewhere else"
+
 #######################
 # Authentication      #
 #######################
